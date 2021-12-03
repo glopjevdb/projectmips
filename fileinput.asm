@@ -1,6 +1,6 @@
 .data
 
-fin:	.asciiz		"./MIPS/projectmips/input.txt"
+fin:	.asciiz		"./MIPS/projectmips/maze.txt"
 
 .globl fileinput
 .text
