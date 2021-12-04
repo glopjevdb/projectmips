@@ -6,7 +6,7 @@ blauw:	.word		0x000000ff
 
 .text
 
-.globl main
+.globl updatepixel
 
 updatepixel:
 	###################################################################################
@@ -29,17 +29,23 @@ updatepixel:
 	li $t5, 31
 #	li $s0, 0		# x = 0
 #	li $s1, 0		# y = -1
-	addi $s1, $s1, -1	# hierboven
-	li $s2, 32		# waarde om vergelijkingen mee te doen
-	beq $a1, 0, zwart
-	beq $a1, 1, blauw
+#	addi $s1, $s1, -1	# hierboven
+	lw $s2, geel		# laad geel in
+	beq $a1, 0, zwartpixel
+	beq $a1, 1, blauwpixel
+	beq $a1, 2, yellowpixel
 	
-blauw:
+blauwpixel:
 	sw $s0, ($a0)		# zet waarde van bitmap op positie op blauw
 	j exit
-zwart:
-	sw $s1, ($a0)
+zwartpixel:
+	sw $s1, ($a0)		# zet waarde van bitmap op zwart
 	j exit
+
+yellowpixel:
+	sw $s2, ($a0)		# zet waarde van bitmap op geel
+	j exit
+	
 exit:
 # set framepointer back
 	lw	$s4, -24($fp)

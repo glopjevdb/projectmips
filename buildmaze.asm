@@ -6,6 +6,7 @@
 
 newline:	.byte	'\n'
 wall:		.byte	'w'
+exit:		.byte   'u'
 .text
 
 buildmaze:
@@ -13,11 +14,14 @@ buildmaze:
 #	CHANGE FRAMEPOINTER
 	sw	$fp, 0($sp)			# save old framepointer
 	move	$fp, $sp			# framepointer -> top of stack
-	subu	$sp, $sp, 16			# Allocate 3 words on stack (16 bytes)
+	subu	$sp, $sp, 24			# Allocate 3 words on stack (16 bytes)
 	sw	$ra, -4($fp)			# store return address on stack
 	sw	$s0, -8($fp)			# store s-registers on stack
 	sw	$s1, -12($fp)
-
+	sw 	$s2, -16($fp)
+	sw	$s3, -20($fp)
+	sw	$s4, -24($fp)
+	sw	$s5, -28($fp)
 ###################################################################################
 
 	jal fileinput
@@ -25,7 +29,7 @@ buildmaze:
 	
 	li $t0, 0				# counter to count width
 	move $t1, $s0				# get adress of text in $t1
-	lw $t3, newline				# load newline char in t3
+	lb $t3, newline				# load newline char in t3
 getwidth:
 	lb $t2, 0($t1)				# load char in t2
 	beq $t2, $t3, widthfound		# jump to widthfound if newline
@@ -52,32 +56,53 @@ stringended:
 	move $a3, $t0				# load height in $a3
 	
 #UPDATE PIXELS IN BITMAP
-	move $t0, $s0				# pointer to text: $t0
-	lb $t4,	blauw				# blue text in $t4
-	li $t1, 0				# x counter
-	li $t2, 0				# y counter
-	lb $t5, newline
-loop2:						#a2: maxwidth	
-	lw $a0, $t1
-	lw $a1, $t2
+	move $s3, $s0				# pointer to text: $s3
+	li $s4, 0				# x counter
+	li $s5, 0				# y counter
+loop2:
+	lb $t4,	wall				# blue text in $t4
+	lb $t5, newline				# '\n' in $t5
+	lb $t6, exit						
+	move $a0, $s4				#a2: maxwidth	
+	move $a1, $s5
 	jal logicaltomem			#$v0 -> adres
-	lb $t3, ($t0)
+	lb $t3, ($s3)
 	beq $t3, $t4, setpixelblauw
+	beq $t3, $t6, setpixelyellow
 loop2end:
-	addi $t1, 1				# x counter + 1
-	add $t0, $s0, $t1			# update pointer to char to next char
-	lb $t3, ($t0)				# load char in t3
-	beq $t3, $t5, newlinefound		# if char == '\n' goto: newlinefound
+	addi $s4, $s4, 1			# x counter + 1
+	addi $s3, $s3, 1			# update pointer to char to next char
+	lb $t3, ($s3)				# load char in t3
+	lb $t5, newline
+	beq $t3, $t5, newlinefound2		# if char == '\n' goto: newlinefound
+	j loop2
 setpixelblauw:
-	lw $a0, $v0				# load adress in a0
+	move $a0, $v0				# load adress in a0
 	li $a1, 1				# load 1 in a1 (blauw)
-	jal updatepixel				# updatepixel
+	jal updatepixel
+	j loop2end				# updatepixel and finish loop
 	
-newlinefound:
+setpixelyellow:
+	move $a0, $v0				# load adress in a0
+	li $a1, 2				#load 2 in a1 (yellow)
+	jal updatepixel				#update pixel and finish loop
+	j loop2end	
+newlinefound2:
+	li $s4, 0
+	addi $s3, $s3, 1
+	addi, $s5, $s5, 1
+	beq $s5, $a3, bitmapfull
+	j loop2
+	
+bitmapfull:
 
 
 ####################################################################################
 # set framepointer back
+	lw	$s5, -28($fp)
+	lw	$s4, -24($fp)
+	lw	$s3, -20($fp)
+	lw	$s2, -16($fp)
 	lw	$s1, -12($fp)			# load s-registers from stack
 	lw	$s0, -8($fp)
 	lw	$ra, -4($fp)			# get right return address 
