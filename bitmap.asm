@@ -3,6 +3,7 @@ zwart: 	.word		0x00000000
 rood: 	.word		0x00ff0000
 geel:	.word		0x00ffff00
 blauw:	.word		0x000000ff
+groen:	.word		0x0000ff00
 
 .text
 
@@ -30,10 +31,10 @@ updatepixel:
 #	li $s0, 0		# x = 0
 #	li $s1, 0		# y = -1
 #	addi $s1, $s1, -1	# hierboven
-	lw $s2, geel		# laad geel in
+	lw $s2, groen		# laad geel in
 	beq $a1, 0, zwartpixel
 	beq $a1, 1, blauwpixel
-	beq $a1, 2, yellowpixel
+	beq $a1, 2, groenpixel
 	
 blauwpixel:
 	sw $s0, ($a0)		# zet waarde van bitmap op positie op blauw
@@ -42,7 +43,7 @@ zwartpixel:
 	sw $s1, ($a0)		# zet waarde van bitmap op zwart
 	j exit
 
-yellowpixel:
+groenpixel:
 	sw $s2, ($a0)		# zet waarde van bitmap op geel
 	j exit
 	

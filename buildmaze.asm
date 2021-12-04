@@ -3,10 +3,11 @@
 #fin:	.asciiz		"./MIPS/projectmips/maze.txt"
 
 .globl buildmaze
-
+noplayer:	.asciiz	"no player found in file!"
 newline:	.byte	'\n'
 wall:		.byte	'w'
 exit:		.byte   'u'
+player:		.byte	's'
 .text
 
 buildmaze:
@@ -55,6 +56,43 @@ newlinefound:
 stringended:
 	move $a3, $t0				# load height in $a3
 	
+#TODO: GET PLAYER POSITION!!
+	move $s3, $s0				# pointer to text
+	li $t0, 0				# X counter
+	li $t1, 0				# y counter
+	lb $t3, player
+	lb $t4, newline
+loop3:
+	lb $t2, ($s3)				# load char in t2
+	beq $t2, $t3, playerfound		# if char == 's' goto: playerfound
+	beq $t2, $t4, newlinefound3		# if char == '\n' goto: newlinefound3
+	addi $s3, $s3, 1			# increment address with 1
+	addi $t0, $t0, 1
+	j loop3
+	
+	
+newlinefound3:
+	addi $s3, $s3, 1			# increment with 1
+	beq $s3, $zero, endloopNOPLAYER		# if string ended: end this loop and give error
+	li $t0, 0				# x = 0
+	addi $t1, $t1, 1			# y++
+	j loop3					# loop again
+	
+
+playerfound:
+	move $s6, $t0				# x pos of player in $s6
+	move $s7, $t1				# y pos of player in $s7
+	j endloop3
+	
+endloopNOPLAYER:
+	la $a0, noplayer
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+	
+endloop3:
+	
 #UPDATE PIXELS IN BITMAP
 	move $s3, $s0				# pointer to text: $s3
 	li $s4, 0				# x counter
@@ -84,7 +122,7 @@ setpixelblauw:
 	
 setpixelyellow:
 	move $a0, $v0				# load adress in a0
-	li $a1, 2				#load 2 in a1 (yellow)
+	li $a1, 2				#load 2 in a1 (green)
 	jal updatepixel				#update pixel and finish loop
 	j loop2end	
 newlinefound2:
