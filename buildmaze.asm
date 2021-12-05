@@ -8,6 +8,8 @@ newline:	.byte	'\n'
 wall:		.byte	'w'
 exit:		.byte   'u'
 player:		.byte	's'
+enemy:		.byte	'e'
+candy:		.byte	'c'
 .text
 
 buildmaze:
@@ -35,7 +37,7 @@ getwidth:
 	lb $t2, 0($t1)				# load char in t2
 	beq $t2, $t3, widthfound		# jump to widthfound if newline
 	addi $t0, $t0, 1			# width + 1			
-	add $t1, $s0, $t0			# increment adress with 1
+	addi $t1, $t1, 1			# increment adress with 1, $t, 
 	j getwidth
 widthfound:	
 	move $a2, $t0				# set width in $a2
@@ -98,15 +100,19 @@ endloop3:
 	li $s4, 0				# x counter
 	li $s5, 0				# y counter
 loop2:
+	lb $t2, candy
 	lb $t4,	wall				# blue text in $t4
 	lb $t5, newline				# '\n' in $t5
-	lb $t6, exit						
+	lb $t6, exit		
+	lb $t7, enemy				
 	move $a0, $s4				#a2: maxwidth	
 	move $a1, $s5
 	jal logicaltomem			#$v0 -> adres
 	lb $t3, ($s3)
 	beq $t3, $t4, setpixelblauw
-	beq $t3, $t6, setpixelyellow
+	beq $t3, $t6, setpixelgreen
+	beq $t3, $t7, setpixelred
+	beq $t3, $t2, setpixelwhite
 loop2end:
 	addi $s4, $s4, 1			# x counter + 1
 	addi $s3, $s3, 1			# update pointer to char to next char
@@ -120,11 +126,24 @@ setpixelblauw:
 	jal updatepixel
 	j loop2end				# updatepixel and finish loop
 	
-setpixelyellow:
+setpixelred:
+	move $a0, $v0
+	li $a1, 4				# load 4 in $a1 (red)
+	jal updatepixel
+	j loop2end
+	
+setpixelgreen:
 	move $a0, $v0				# load adress in a0
 	li $a1, 2				#load 2 in a1 (green)
 	jal updatepixel				#update pixel and finish loop
 	j loop2end	
+	
+setpixelwhite:
+	move $a0, $v0
+	li $a1, 5				# load 2 in $a1 (White)
+	jal updatepixel
+	j loop2end
+	
 newlinefound2:
 	li $s4, 0
 	addi $s3, $s3, 1
@@ -133,7 +152,12 @@ newlinefound2:
 	j loop2
 	
 bitmapfull:
-
+	move $a0, $s6				# get player location
+	move $a1, $s7
+	jal logicaltomem			# mem adrr of player location $v0
+	move $a0, $v0
+	li $a1,	3				# load 3 in a1 : YELLOW
+	jal updatepixel
 
 ####################################################################################
 # set framepointer back
