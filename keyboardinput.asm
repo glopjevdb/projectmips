@@ -10,72 +10,75 @@ d:	.asciiz		"d"
 .align 2
 x:	.asciiz		"x"
 
-.align 2
-up:	.asciiz		"up\n"
-.align 2
-down:	.asciiz		"down\n"
-.align 2
-left:	.asciiz		"left\n"
-.align 2
-right:	.asciiz		"right\n"
-.align 2
-geefkarakter: .asciiz	"Geef een karakter in\n"
+.globl keyboardInput
 
 .text
-	li $s5, 0xffff0000
-	li $s6, 0xffff0004
-main:
-	li $t0, 1
-	lw $s0, ($s5)
-	beq $s0, $t0, leesin		#als 0xffff0000 == 1
-	li $v0, 4
-	la $a0, geefkarakter
-	syscall
-return:
+keyboardInput:
+	###################################################################################
+#	CHANGE FRAMEPOINTER
+	sw	$fp, 0($sp)			# save old framepointer
+	move	$fp, $sp			# framepointer -> top of stack
+	subu	$sp, $sp, 20			# Allocate 3 words on stack (16 bytes)
+	sw	$ra, -4($fp)			# store return address on stack
+	sw	$s0, -8($fp)			# store s-registers on stack
+	sw	$s1, -12($fp)
+	sw	$s2, -16($fp)
+
+###################################################################################
+
+
+	li $s1, 0xffff0000			# load input addresses
+	li $s2, 0xffff0004
 	
-	li $a0, 2000
-	li $v0, 32
-	syscall
-	j main
+	li $t0, 0
+	lw $s0, ($s1)
+	beq $s0, $t0, noInput		#als 0xffff0000 == 0 -> no input found
 	
 leesin:
-	lw $t1, ($s6)		#$t1 = input
+	lw $t1, ($s2)		#$t1 = input
 	lw $t2, z		#t2 = z
 	lw $t3, s		#$t3 =s
 	lw $t4, q		#$t4 = q
 	lw $t5, d		#$t5 = d
 	lw $t6, x		#$t6 = x
-	beq $t1, $t6, exit
-	beq $t1, $t2, printup
-	beq $t1, $t3, printdown
-	beq $t1, $t4, printleft
-	beq $t1, $t5, printright
+	beq $t1, $t6, retstop
+	beq $t1, $t2, retup			# if input is " a direction ": return 8:up, 4:left, 5:down, 6:right
+	beq $t1, $t3, retdown
+	beq $t1, $t4, retleft
+	beq $t1, $t5, retright
 	j return
 	
-printup:
-	la $a0, up
-	li $v0, 4
-	syscall
+retup:
+	li $v0, 8
 	j return
 	
-printdown:
-	la $a0, down
-	li $v0, 4
-	syscall
+retdown:
+	li $v0, 5
 	j return
 	
-printleft:
-	la $a0, left
+retleft:
 	li $v0, 4
-	syscall
 	j return
 	
-printright:
-	la $a0, right
-	li $v0, 4
-	syscall
+retright:
+	li $v0, 6
+	j return
+	
+retstop:
+	li $v0, 1
 	j return
 
-exit:
-	li $v0, 10
-	syscall
+noInput:
+	li $v0, 0
+	j return
+
+
+return:
+	# set framepointer back
+	lw	$s2, -16($fp)
+	lw	$s1, -12($fp)			# load s-registers from stack
+	lw	$s0, -8($fp)
+	lw	$ra, -4($fp)			# get right return address 
+	move 	$sp, $fp			# stackpointer -> framepointer
+	lw	$fp, 0($sp)			# restore old framepointer
+	jr	$ra

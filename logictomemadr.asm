@@ -38,7 +38,6 @@ logicaltomem:				#$a0: x  	$a1: y
 	add $a0, $a1, $a0    		# aantalbits = y*32*4 + x * 4
 	add $v0, $t1, $a0		# adres = beginadres scherm + aantalbits
 	la $v0, ($v0)
-	jr $ra
 	
 	
 # set framepointer back

@@ -1,6 +1,7 @@
 .data
 
 blauw:	.word		0x000000ff
+groen:	.word		0x0000ff00
 
 .globl updateplayerpos
 
@@ -36,10 +37,22 @@ move 	$s3, $a2			# new player y in s3
 
 move 	$a0, $s2			# move new player x in arg pos 0		(x)
 move 	$a1, $s3			# move new player y in arg pos 1		(y)
+
+move $a2, $s4				# load dimensions of grid
+move $a3, $s5
+
 jal logicaltomem			# v0: memaddress of new position
 
 lw	$t0, ($v0)			# load color of pixel of mem addr in $t0
 lw	$t1, blauw			# load blue color in $t1
+lw	$t2, groen			# load green color in $t2
+
+
+
+
+
+	
+beq $t0, $t2, exitfound			# if player goes to exit: jump to exitfound
 
 bne	$t0, $t1, moveplayer		# if not a wall: move player to new pos
 j exit					# else: stop
@@ -49,7 +62,7 @@ moveplayer:
 	move 	$a0, $v0			# load address in $a0
 	li 	$a1, 3				# load 3 in a1	(yellow)
 	jal updatepixel
-	
+		
 	# TWEEDE PIXEL ZWART MAKEN
 	move 	$a0, $s0
 	move 	$a1, $s1			# position of initial location in arguments
@@ -59,13 +72,17 @@ moveplayer:
 	li 	$a1, 0				# load 0 in a1 (black)
 	jal 	updatepixel
 	
-	move 	$v0, $s3			# move new player pos to v0 and v1 to return
-	move 	$v1, $s2	
+	move 	$s7, $s3			# move new player pos to s6 and s7 to return
+	move 	$s6, $s2	
+	
+	
 	
 	j exit					# exit loop
 
 
-
+exitfound:
+	li $v0, 10
+	syscall					# cleanly exit to OS
 
 exit:
 ####################################################################################

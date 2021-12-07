@@ -2,6 +2,8 @@
 
 #fin:	.asciiz		"./MIPS/projectmips/maze.txt"
 
+.globl newline
+
 .globl buildmaze
 noplayer:	.asciiz	"no player found in file!"
 newline:	.byte	'\n'
@@ -17,7 +19,7 @@ buildmaze:
 #	CHANGE FRAMEPOINTER
 	sw	$fp, 0($sp)			# save old framepointer
 	move	$fp, $sp			# framepointer -> top of stack
-	subu	$sp, $sp, 24			# Allocate 3 words on stack (16 bytes)
+	subu	$sp, $sp, 32			# Allocate 3 words on stack (16 bytes)
 	sw	$ra, -4($fp)			# store return address on stack
 	sw	$s0, -8($fp)			# store s-registers on stack
 	sw	$s1, -12($fp)
@@ -32,6 +34,7 @@ buildmaze:
 	
 	li $t0, 0				# counter to count width
 	move $t1, $s0				# get adress of text in $t1
+	
 	lb $t3, newline				# load newline char in t3
 getwidth:
 	lb $t2, 0($t1)				# load char in t2
@@ -108,7 +111,7 @@ loop2:
 	move $a0, $s4				#a2: maxwidth	
 	move $a1, $s5
 	jal logicaltomem			#$v0 -> adres
-	lb $t3, ($s3)
+	lb $t3, ($s3)				# FOUT
 	beq $t3, $t4, setpixelblauw
 	beq $t3, $t6, setpixelgreen
 	beq $t3, $t7, setpixelred
@@ -119,6 +122,7 @@ loop2end:
 	lb $t3, ($s3)				# load char in t3
 	lb $t5, newline
 	beq $t3, $t5, newlinefound2		# if char == '\n' goto: newlinefound
+	beq $t3, $zero, bitmapfull
 	j loop2
 setpixelblauw:
 	move $a0, $v0				# load adress in a0
@@ -148,7 +152,7 @@ newlinefound2:
 	li $s4, 0
 	addi $s3, $s3, 1
 	addi, $s5, $s5, 1
-	beq $s5, $a3, bitmapfull
+	bge $s5, $a3, bitmapfull
 	j loop2
 	
 bitmapfull:
@@ -158,11 +162,13 @@ bitmapfull:
 	move $a0, $v0
 	li $a1,	3				# load 3 in a1 : YELLOW
 	jal updatepixel
-
+	j stop
+	
+stop:
 ####################################################################################
 # set framepointer back
-	lw	$s5, -28($fp)
-	lw	$s4, -24($fp)
+	move	$s5, $a3
+	move	$s4, $a2
 	lw	$s3, -20($fp)
 	lw	$s2, -16($fp)
 	lw	$s1, -12($fp)			# load s-registers from stack
