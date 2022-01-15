@@ -9,6 +9,7 @@ q:	.asciiz		"q"
 d:	.asciiz		"d"
 .align 2
 x:	.asciiz		"x"
+.align 2
 
 .globl keyboardInput
 

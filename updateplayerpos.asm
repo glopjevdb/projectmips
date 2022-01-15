@@ -3,6 +3,8 @@
 blauw:	.word		0x000000ff
 groen:	.word		0x0000ff00
 
+exitstring: .asciiz	"De uitgang is bereikt!! "
+
 .globl updateplayerpos
 
 .text
@@ -81,6 +83,30 @@ moveplayer:
 
 
 exitfound:
+		# EERST: tweede pixel geel maken
+	move 	$a0, $v0			# load address in $a0
+	li 	$a1, 3				# load 3 in a1	(yellow)
+	jal updatepixel
+		
+	# TWEEDE PIXEL ZWART MAKEN
+	move 	$a0, $s0
+	move 	$a1, $s1			# position of initial location in arguments
+	jal 	logicaltomem			# v0: address of pixel
+	
+	move 	$a0, $v0			# load address of pixel in a0
+	li 	$a1, 0				# load 0 in a1 (black)
+	jal 	updatepixel
+	
+	move 	$s7, $s3			# move new player pos to s6 and s7 to return
+	move 	$s6, $s2	
+	
+	
+	
+	
+	li $v0, 4
+	la $a0, exitstring
+	syscall
+	
 	li $v0, 10
 	syscall					# cleanly exit to OS
 

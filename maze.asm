@@ -2,11 +2,15 @@
 
 #fin:	.asciiz		"./MIPS/MIPSMazeGame/maze.txt"
 .globl buffer
-buffer:		.space 2048
+buffer:		.space 262656
+.globl array
+.align 2
+array:		.word -1:2048
 
 .text
 
 	jal buildmaze
+	
 	
 loop:
 	jal keyboardInput			# load input in v0

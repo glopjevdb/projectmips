@@ -8,14 +8,6 @@ blauw:		.word		0x000000ff
 
 .globl logicaltomem
 
-	li $a0, 12
-	li $a1, 15
-	jal logicaltomem
-	lw $t0, rood
-	sw $t0, ($v0)
-	
-	li $v0, 10
-	syscall
 	
 logicaltomem:				#$a0: x  	$a1: y
 	#INPUTS: a0: x		a1: y		a2: width	a3: height
@@ -33,7 +25,7 @@ logicaltomem:				#$a0: x  	$a1: y
 
 	sll $a0, $a0, 2			#x * 4 
 	sll $a1, $a1, 2			#y * width * 4  --> 32 blokjes op 1 rij
-	mul $a1, $a1, $a3
+	mul $a1, $a1, $a2
 	la $t1, ($gp)			#laad eerste adres van bitmap display in
 	add $a0, $a1, $a0    		# aantalbits = y*32*4 + x * 4
 	add $v0, $t1, $a0		# adres = beginadres scherm + aantalbits
