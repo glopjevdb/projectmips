@@ -11,4 +11,3 @@ You an also create your own maps using the following the legend:
 - `w`: A wall
 - `p`: A passage
 - `u`: An exit
-- 
